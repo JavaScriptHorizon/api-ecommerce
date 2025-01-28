@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(uuid())
+  name     String?
+  email    String   @unique
+  password String
+  role     String   @default("USER")
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  Address  Address?
+  Cart     Cart[]
+  Order    Order[]
+}
+
+model Address {
+  id      String @id @default(uuid())
+  street  String
+  details String
+  city    String
+  phone   String
+  user    User   @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String
+  count     Int      @default(1)
+  productId String?
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+  Product   Product? @relation(fields: [productId], references: [id])
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, productId])
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+  productId String?
+  Product   Product? @relation(fields: [productId], references: [id])
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  name        String
+  price       Float
+  image       String
+  description String
+  createAt    DateTime   @default(now())
+  updateAt    DateTime   @updatedAt
+  Cart        Cart[]
+  Category    Category[]
+  Order       Order[]
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  userId    String
+  quantity  Int
+  total     Float
+  status    String?
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+  productId String?
+  Product   Product? @relation(fields: [productId], references: [id])
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, productId])
+}
